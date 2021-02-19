@@ -16,7 +16,8 @@ contract StakeHolder is RewardToken, Ownable {
     }
 
     address[] internal stakers;
-    mapping(address => uint256) internal stakes;
+    mapping(address => uint256) internal stakeBalances;
+    uint256 public percentReward = 1;
 
     function addStaker(address _staker) public {
         bool isStaker = false;
@@ -43,27 +44,43 @@ contract StakeHolder is RewardToken, Ownable {
     function totalStakes() public view returns (uint256) {
         uint256 _totalStakes = 0;
         for (uint256 i = 0; i < stakers.length; i++) {
-            _totalStakes = _totalStakes.add(stakes[stakers[i]]);
+            _totalStakes = _totalStakes.add(stakeBalances[stakers[i]]);
         }
         return _totalStakes;
     }
 
     // add check to see if sender has high enough balance to send-- make modifier
-    function createStake(uint256 _stake) public {
-        if (msg.sender.balance >= _stake) {
-            bool isStaker = false;
-            _burn(msg.sender, _stake);
-            for (uint256 i = 0; i < stakers.length; i++) {
-                if (msg.sender == stakers[i]) {
-                    isStaker = true;
-                    stakes[stakers[i]] = stakes[stakers[i]].add(_stake);
-                    break;
-                }
+    function deposit(uint256 _stake) public {
+        require(msg.sender.balance >= _stake, "insufficient balance");
+        bool isStaker = false;
+        _burn(msg.sender, _stake);
+        for (uint256 i = 0; i < stakers.length; i++) {
+            if (msg.sender == stakers[i]) {
+                isStaker = true;
+                stakeBalances[stakers[i]] = stakeBalances[stakers[i]].add(
+                    _stake
+                );
+                break;
             }
-            if (!isStaker) {
-                addStaker(msg.sender);
-                stakes[msg.sender] = _stake;
-            }
+        }
+        if (!isStaker) {
+            addStaker(msg.sender);
+            stakeBalances[msg.sender] = _stake;
+        }
+    }
+
+    function withdraw() public {
+        _mint(msg.sender, stakeBalances[msg.sender]);
+    }
+
+    function calculateReward(address _staker) public view returns (uint256) {
+        return (stakeBalances[_staker] / 100) * percentReward;
+    }
+
+    function rewardStakers() public onlyOwner {
+        for (uint256 i = 0; i < stakers.length; i++) {
+            uint256 reward = calculateReward(stakers[i]);
+            stakeBalances[stakers[i]] = stakeBalances[stakers[i]].add(reward);
         }
     }
 }
