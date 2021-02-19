@@ -41,6 +41,15 @@ contract StakeHolder is RewardToken, Ownable {
         }
     }
 
+    function checkBalance(address _staker) public view returns () {
+        for (uint256 i = 0; i < stakers.length; i++) {
+            if (_staker == stakers[i]) {
+                return stakeBalances[stakers[i]];
+            }
+        }
+        return "staker does not exist";
+    }
+
     function totalStakes() public view returns (uint256) {
         uint256 _totalStakes = 0;
         for (uint256 i = 0; i < stakers.length; i++) {
@@ -77,7 +86,7 @@ contract StakeHolder is RewardToken, Ownable {
         return (stakeBalances[_staker] / 100) * percentReward;
     }
 
-    function rewardStakers() public onlyOwner {
+    function rewardStakeHolders() public onlyOwner {
         for (uint256 i = 0; i < stakers.length; i++) {
             uint256 reward = calculateReward(stakers[i]);
             stakeBalances[stakers[i]] = stakeBalances[stakers[i]].add(reward);

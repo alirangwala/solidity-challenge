@@ -24,17 +24,32 @@ contract('RewardToken', (accounts) => {
       await rewardToken.deposit(1, { from: account1 });
 
       assert.equal(await rewardToken.balanceOf(account1), 2);
-      // assert.equal(
-      //   await rewardToken.totalSupply(),
-      //   tokens.minus(1).toString(10)
-      // );
       assert.equal(await rewardToken.totalStakes(), 1);
     });
-    xit('Should NOT create a stake if insufficient balance', async () => {
+    it('Should NOT create a stake if insufficient balance', async () => {
       await rewardToken.transfer(account1, 3, { from: owner });
       await expectRevert(
         rewardToken.deposit(5, { from: account1 })
         , 'insufficient balance')
     });
   })
+
+  it('Should reward stakeholders', async () => {
+    await rewardToken.transfer(account1, 100, { from: owner });
+    await rewardToken.deposit(100, { from: account1 });
+    await rewardToken.rewardStakeHolders({ from: owner });
+
+    assert.equal(await rewardToken.checkBalance(account1), 101);
+  });
+
+  it('Should withdraw full balance', async () => {
+    await rewardToken.transfer(account1, 100, { from: owner });
+    await rewardToken.deposit(100, { from: account1 });
+    await rewardToken.rewardStakeHolders({ from: owner });
+
+    assert.equal(await rewardToken.checkBalance(account1), 101);
+    await rewardToken.withdraw({ from: account1 });
+    assert.equal(await rewardToken.checkBalance(account1), 0);
+  });
+
 });
