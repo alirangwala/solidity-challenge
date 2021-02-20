@@ -7,6 +7,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract RewardToken is ERC20 {
     constructor() ERC20("Reward", "RWT") {
-        _mint(msg.sender, 1000);
+        _mint(msg.sender, 1000000000000000000);
     }
 }

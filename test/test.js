@@ -26,6 +26,8 @@ contract('RewardToken', (accounts) => {
       assert.equal(await rewardToken.balanceOf(account1), 2);
       assert.equal(await rewardToken.totalStakes(), 1);
     });
+
+    // at this point truffle test started hanging so I have no idea if the tests actually pass. I've run into this problem in the past and what worked was deleting everything and re-cloning. Didn't have time to do this however
     it('Should NOT create a stake if insufficient balance', async () => {
       await rewardToken.transfer(account1, 3, { from: owner });
       await expectRevert(
